@@ -1,0 +1,10 @@
+{
+  "testuser1@gmail.com": {
+    "password": "pass123",
+    "count": 1
+  },
+  "testuser2@yahoo.com": {
+    "password": "mypassword",
+    "count": 0
+  }
+}
