@@ -1,0 +1,10 @@
+{
+  "ABC123XYZ789": {
+    "days": "30",
+    "used": false
+  },
+  "PREMKEY111222": {
+    "days": "15",
+    "used": true
+  }
+}
