@@ -25,12 +25,11 @@ ACCOUNTS_FILE = "data/accounts.json"
 STATE_FILE = "data/state.json"
 USERS_FILE = "data/users.json"
 
-# In-memory
+# In-memory dictionaries
 users_used_redeem = {}
 pending_redeem = {}
-account_usage = {}
 
-# Ensure files exist
+# Ensure JSON files exist with default data
 for f in [KEYS_FILE, POINTS_FILE, ACCOUNTS_FILE, STATE_FILE, USERS_FILE]:
     save_json(f, load_json(f))
 
@@ -44,7 +43,7 @@ def start(update: Update, context: CallbackContext):
         save_json(USERS_FILE, users)
 
     update.message.reply_text(
-        "Welcome To The Bot ⚡️\n"
+        "Welcome To Aizen Bot ⚡️\n"
         "Please Use this /redeem Command For Get Prime video 🧑‍💻 \n"
         "For Premium use This Command /premium"
     )
@@ -69,7 +68,7 @@ def redeem(update: Update, context: CallbackContext):
     for admin in ADMIN_IDS:
         context.bot.send_message(
             chat_id=admin,
-            text=f"New Redeem Request:\nName: {name}\nUser: @{username}\nID: {uid}\nMsg: {msg}\n\n/approved_{uid} or /failed_{uid}"
+            text=f"New Redeem Request:\nName: {name}\nUser: @{username}\nID: {uid}\nMsg: {msg}\n\n/approved_{uid} या /failed_{uid} से रिप्लाई करें।"
         )
 
     pending_redeem[uid] = msg
@@ -104,7 +103,7 @@ def genk(update: Update, context: CallbackContext):
     if len(context.args) == 0:
         return update.message.reply_text("Usage: /genk <days>")
 
-    days = context.args
+    days = context.args[0]
     key = ''.join(random.choices(string.ascii_uppercase+string.digits, k=12))
     keys = load_json(KEYS_FILE)
     keys[key] = {"days": days, "used": False}
@@ -120,7 +119,8 @@ def broadcast(update: Update, context: CallbackContext):
     for uid in users.keys():
         try:
             context.bot.send_message(chat_id=uid, text=text)
-        except: pass
+        except:
+            pass
     update.message.reply_text("Broadcast done ✅")
 
 
@@ -128,7 +128,7 @@ def approved(update: Update, context: CallbackContext):
     if update.message.from_user.id not in ADMIN_IDS:
         return
     try:
-        uid = update.message.text.split("_")
+        uid = update.message.text.split("_")[1]
     except:
         return
     users = load_json(USERS_FILE)
@@ -150,15 +150,17 @@ def approved(update: Update, context: CallbackContext):
 """
     all_users = load_json(USERS_FILE)
     for idd in all_users.keys():
-        try: context.bot.send_message(chat_id=idd, text=bc_msg)
-        except: pass
+        try:
+            context.bot.send_message(chat_id=idd, text=bc_msg)
+        except:
+            pass
 
 
 def failed(update: Update, context: CallbackContext):
     if update.message.from_user.id not in ADMIN_IDS:
         return
     try:
-        uid = update.message.text.split("_")
+        uid = update.message.text.split("_")[1]
     except:
         return
     context.bot.send_message(chat_id=uid, text="Failed For Some Technical issues 🧑‍💻")
@@ -187,7 +189,7 @@ def reply(update: Update, context: CallbackContext):
         return
     if len(context.args) < 2:
         return update.message.reply_text("Usage: /reply <uid> <message>")
-    uid = context.args
+    uid = context.args[0]
     msg = " ".join(context.args[1:])
     context.bot.send_message(chat_id=uid, text=msg)
     update.message.reply_text("Replied ✅")
@@ -199,7 +201,7 @@ def add_points(update: Update, context: CallbackContext):
         return
     if len(context.args) < 2:
         return update.message.reply_text("Usage: /add_points <uid> <points>")
-    uid, pts = context.args, int(context.args)
+    uid, pts = context.args[0], int(context.args)
     points = load_json(POINTS_FILE)
     points[uid] = points.get(uid, 0) + pts
     save_json(POINTS_FILE, points)
@@ -212,7 +214,9 @@ def add_accounts(update: Update, context: CallbackContext):
         return
     accs = load_json(ACCOUNTS_FILE)
     for arg in context.args:
-        email, pwd = arg.split(":")
+        if ":" not in arg:
+            continue
+        email, pwd = arg.split(":", 1)
         accs[email] = {"password": pwd, "count": 0}
     save_json(ACCOUNTS_FILE, accs)
     update.message.reply_text("Accounts Added ✅")
